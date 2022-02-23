@@ -1,5 +1,6 @@
 import 'package:flutter_bluetooth/app/modules/bluetooth/bluetooth_store.dart';
 import 'package:flutter_bluetooth/app/modules/bluetooth/device_details_page.dart';
+import 'package:flutter_bluetooth/app/modules/bluetooth/widgets/scan_store.dart';
 import 'package:flutter_bluetooth/app/modules/home/home_store.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
@@ -11,6 +12,8 @@ class AppModule extends Module {
   final List<Bind> binds = [
     Bind.lazySingleton((i) => HomeStore()),
     Bind.lazySingleton((i) => BluetoothStore()),
+    Bind.lazySingleton((i) => ScanStore()),
+
   ];
 
   @override

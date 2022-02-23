@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth/app/modules/bluetooth/bluetooth_store.dart';
 import 'package:flutter_bluetooth/app/modules/bluetooth/widgets/device_list_widget.dart';
+import 'package:flutter_bluetooth/app/modules/bluetooth/widgets/scan_store.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_triple/flutter_triple.dart';
@@ -15,6 +16,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends ModularState<HomePage, BluetoothStore> {
+  ScanStore scan = Modular.get();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,34 +39,28 @@ class _HomePageState extends ModularState<HomePage, BluetoothStore> {
           );
         },
       ),
-      /*floatingActionButton: TripleBuilder(
-        store: store,
+      floatingActionButton: TripleBuilder<ScanStore, Exception, bool>(
+        store: scan,
         builder: (_, triple) {
-          return store.scanStarted
+          return scan.state
               ? FloatingActionButton(
-                  onPressed: () => store.stopScan(),
+                  onPressed: () {
+                    store.stopScan();
+                    scan.update(!scan.state);
+                  },
                   backgroundColor: Colors.red,
                   child: const Icon(Icons.stop),
                 )
               : FloatingActionButton(
-                  onPressed: () => store.scanStart([]),
+                  onPressed: () {
+                    store.scanStart([]);
+                    scan.update(!scan.state);
+                  },
                   backgroundColor: Colors.blue,
                   child: const Icon(Icons.search),
                 );
         },
-      ),*/
-
-      floatingActionButton: store.scanStarted
-          ? FloatingActionButton(
-              onPressed: () => store.stopScan(),
-              backgroundColor: Colors.red,
-              child: const Icon(Icons.stop),
-            )
-          : FloatingActionButton(
-              onPressed: () => store.scanStart([]),
-              backgroundColor: Colors.blue,
-              child: const Icon(Icons.search),
-            ),
+      ),
     );
   }
 }
