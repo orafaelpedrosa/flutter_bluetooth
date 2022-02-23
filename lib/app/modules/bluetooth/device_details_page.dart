@@ -3,7 +3,6 @@ import 'package:flutter_bluetooth/app/modules/bluetooth/bluetooth_store.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 
-
 class DeviceDetailsPage extends StatefulWidget {
   late DiscoveredDevice device;
   DeviceDetailsPage({
@@ -33,10 +32,10 @@ class _DeviceDetailsPageState extends State<DeviceDetailsPage> {
           ),
           ElevatedButton(
             onPressed: () {
-              store.discoverServices(widget.device);
-              //store.subscribeCharacteristic();
+              store.discoverServices(widget.device).whenComplete(
+                    () => store.subscribeCharacteristic(),
+                  );
             },
-            //onPressed: () => store.subscribeCharacteristic(),
             child: const Text('Dados'),
           ),
         ],
