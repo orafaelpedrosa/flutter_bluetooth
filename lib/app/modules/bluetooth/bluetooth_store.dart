@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:flutter_triple/flutter_triple.dart';
 
@@ -12,20 +13,12 @@ class BluetoothStore extends NotifierStore<Exception, List<DiscoveredDevice>> {
   FlutterReactiveBle flutterReactiveBle = FlutterReactiveBle();
   late StreamSubscription<List<int>>? subscribeStream;
   StreamSubscription<DiscoveredDevice>? scanStream;
-  final deviceConnectionController = StreamController<ConnectionStateUpdate>();
-  StreamSubscription<ConnectionStateUpdate>? _connection;
-  Stream<ConnectionStateUpdate>? connectionS;
+  late StreamSubscription<ConnectionStateUpdate> _connection;
   late StreamSubscription subscription;
   final listDevices = <DiscoveredDevice>[];
   late List<DiscoveredService> listDiscoveredService = <DiscoveredService>[];
   late QualifiedCharacteristic rxCharacteristic;
-
-  final List<Uuid> serviceIds = [
-    Uuid.parse('00001810-0000-1000-8000-00805f9b34fb'),
-    Uuid.parse('46a970e00d5f11e28b5e0002a5d5c51b'),
-  ];
-  Uuid characteristicUuid = Uuid.parse('00002A35-0000-1000-8000-00805f9b34fb');
-  //Uuid characteristicUuid = Uuid.parse('0aad7ea00d6011e28e3c0002a5d5c51b');
+  final _deviceConnectionController = StreamController<ConnectionStateUpdate>();
 
   String? readOutput;
   String? writeOutput;
@@ -61,67 +54,6 @@ class BluetoothStore extends NotifierStore<Exception, List<DiscoveredDevice>> {
     scanStarted = false;
     if (scanStream != null) scanStream?.cancel();
     scanStarted = false;
-  }
-
-  Future<void> connect(DiscoveredDevice device) async {
-    setLoading(true);
-    _connection?.cancel();
-    _connection = flutterReactiveBle
-        .connectToDevice(
-      id: device.id,
-    )
-        .listen(
-      (update) {
-        log('${device.name}: ${update.connectionState}');
-        deviceConnectionController.add(update);
-        switch (update.connectionState) {
-          case DeviceConnectionState.connected:
-            {
-              foundDeviceWaitingToConnect = true;
-              connected = true;
-              break;
-            }
-          case DeviceConnectionState.disconnected:
-            {
-              break;
-            }
-          default:
-        }
-      },
-      onError: (Object e) =>
-          log('Connecting to device ${device.name} resulted in error $e'),
-    );
-
-    if (connected) {
-      setLoading(false);
-    }
-  }
-
-  Future<void> connectDevice(DiscoveredDevice device) async {
-    _connection = flutterReactiveBle
-        .connectToDevice(
-      id: device.id,
-    )
-        .listen((event) {
-      log(event.toString());
-    });
-  }
-
-  Future<void> disconnect(DiscoveredDevice device) async {
-    try {
-      log('disconnecting to device: ${device.name}');
-      await _connection?.cancel();
-    } on Exception catch (e, _) {
-      log("Error disconnecting from a device: $e");
-    } finally {
-      deviceConnectionController.add(
-        ConnectionStateUpdate(
-          deviceId: device.id,
-          connectionState: DeviceConnectionState.disconnected,
-          failure: null,
-        ),
-      );
-    }
   }
 
   Future<void> discoverServices(DiscoveredDevice device) async {
@@ -177,72 +109,6 @@ class BluetoothStore extends NotifierStore<Exception, List<DiscoveredDevice>> {
     }
   }
 
-  Future<void> getData(DiscoveredDevice device) async {
-    setLoading(true);
-    _connection?.cancel();
-    _connection = flutterReactiveBle
-        .connectToDevice(
-      id: device.id,
-      connectionTimeout: const Duration(seconds: 5),
-    )
-        .listen(
-      (update) async {
-        log('${device.name}: ${update.connectionState}');
-        deviceConnectionController.add(update);
-        switch (update.connectionState) {
-          case DeviceConnectionState.connected:
-            {
-              bool onDevice = false;
-              listDiscoveredService =
-                  await flutterReactiveBle.discoverServices(device.id);
-              listDiscoveredService.forEach(
-                (service) {
-                  service.characteristics.forEach(
-                    (characteristics) {
-                      switch (characteristics.characteristicId.toString()) {
-                        case '2a35':
-                          onDevice = true;
-                          break;
-                        case '0aad7ea0-0d60-11e2-8e3c-0002a5d5c51b':
-                          onDevice = true;
-                          break;
-                        default:
-                          onDevice = false;
-                      }
-                      if (onDevice) {
-                        onDevice = false;
-                        rxCharacteristic = QualifiedCharacteristic(
-                          characteristicId: characteristics.characteristicId,
-                          serviceId: characteristics.serviceId,
-                          deviceId: device.id,
-                        );
-                      }
-                    },
-                  );
-                },
-              );
-              subscribeStream = flutterReactiveBle
-                  .subscribeToCharacteristic(rxCharacteristic)
-                  .listen(
-                (data) {
-                  subscribeOutput = data.toString();
-                  log(data.toString());
-                },
-              );
-              break;
-            }
-          case DeviceConnectionState.disconnected:
-            {
-              break;
-            }
-          default:
-        }
-      },
-      onError: (Object e) =>
-          log('Connecting to device ${device.name} resulted in error $e'),
-    );
-  }
-
   Future<void> readCharacteristic() async {
     setLoading(true);
     final result =
@@ -271,6 +137,6 @@ class BluetoothStore extends NotifierStore<Exception, List<DiscoveredDevice>> {
   }
 
   Future<void> dispose() async {
-    await deviceConnectionController.close();
+    await _deviceConnectionController.close();
   }
 }

@@ -9,7 +9,6 @@ import 'home_store.dart';
 class HomePage extends StatefulWidget {
   final String title;
   HomePage({Key? key, this.title = "Home"}) : super(key: key);
-  BluetoothStore store = Modular.get();
 
   @override
   _HomePageState createState() => _HomePageState();
