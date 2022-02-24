@@ -44,6 +44,8 @@ class _DeviceListState extends State<DeviceList> {
                 (device) => Padding(
                   padding: const EdgeInsets.only(top: 10.0),
                   child: ListTile(
+                    title: Text(device.name),
+                    subtitle: Text(device.id),
                     leading: const CircleAvatar(
                       child: Icon(
                         Icons.bluetooth,
@@ -51,8 +53,9 @@ class _DeviceListState extends State<DeviceList> {
                       ),
                       backgroundColor: Colors.black45,
                     ),
-                    title: Text(device.name),
-                    subtitle: Text(device.id),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios
+                    ),
                     onTap: () async {
                       await store.connect(device).whenComplete(
                         () async {

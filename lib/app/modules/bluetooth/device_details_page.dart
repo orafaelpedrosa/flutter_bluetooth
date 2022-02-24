@@ -38,7 +38,7 @@ class _DeviceDetailsPageState extends State<DeviceDetailsPage> {
               ElevatedButton(
                 onPressed: () async {
                   await store.discoverServices(widget.device).whenComplete(() {
-                    Future.delayed(const Duration(microseconds: 500));
+                    Future.delayed(const Duration(microseconds: 1000));
                     store.subscribeCharacteristic();
                   });
                 },
