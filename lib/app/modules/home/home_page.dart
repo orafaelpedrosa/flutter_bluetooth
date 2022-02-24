@@ -22,7 +22,7 @@ class _HomePageState extends ModularState<HomePage, BluetoothStore> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bluetooth'),
+        title: const Text('Flutter Bluetooth'),
       ),
       body: ScopedBuilder<BluetoothStore, Exception, List<DiscoveredDevice>>(
         store: store,

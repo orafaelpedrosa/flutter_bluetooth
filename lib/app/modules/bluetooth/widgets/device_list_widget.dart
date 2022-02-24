@@ -41,23 +41,27 @@ class _DeviceListState extends State<DeviceList> {
           physics: const NeverScrollableScrollPhysics(),
           children: snapshot.data!
               .map(
-                (device) => ListTile(
-                  leading: const Icon(
-                    Icons.bluetooth,
+                (device) => Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: ListTile(
+                    leading: const CircleAvatar(
+                      child: Icon(
+                        Icons.bluetooth,
+                        color: Colors.white,
+                      ),
+                      backgroundColor: Colors.black45,
+                    ),
+                    title: Text(device.name),
+                    subtitle: Text(device.id),
+                    onTap: () async {
+                      await store.connect(device).whenComplete(
+                        () async {
+                          Modular.to
+                              .pushNamed('device_details', arguments: device);
+                        },
+                      );
+                    },
                   ),
-                  title: Text(device.name),
-                  subtitle: Text(device.id),
-                  onTap: () async {
-                    await store.connect(device).whenComplete(() async {
-                      Modular.to.pushNamed('device_details', arguments: device);
-                    });
-                  },
-                  /*onTap: () {
-                    store.connect(device).whenComplete(
-                          () => Modular.to
-                              .pushNamed('device_details', arguments: device),
-                        );
-                  },*/
                 ),
               )
               .toList(),
